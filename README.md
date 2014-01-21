@@ -2,7 +2,7 @@
 
 mongo-redline is a very lite an simple Node.js library to connect to Mongodb and map documents with plain Javascript objects.
 It's purely schemaless, fully compatible with official Mongo API and made like a toolkit to fit your needs, rather than a full functional framework like Mongoose.
-You can use it just to connect to Mongo, iit may not very useful, but could be efficient : use only one connection, callback made, so easily integrated with node.js and async.
+You can use it just to connect to Mongo, it may not very useful, but could be efficient : use only one connection, callback made, so easily integrated with node.js and async.
 If you look for a thin layer to define models in a non intrusive manner, it will give you the beginning of the answer ...
 
 
@@ -97,7 +97,7 @@ Returns a redModel.
   * `instanceMethods`: javascript object used to define documents methods
   * `staticMethods`: javascript object used to define `redModel` methods. Adding an entry within this object is similare to set a function attribute on the resulting redModel. 'init' key is reserved to define constructor (see below)
 
-`RedModel.bless`, defined within `staticMethods` or in an other manner, is used to 'type' mongo's document. At reading time each document is blessed depending on is collection. For polymorphism you have to do it manually (see below). 
+`RedModel.bless`, defined within `staticMethods` or in an other manner, is used to 'type' mongo's document. At reading time each document is blessed depending on its collection. For polymorphism you have to do it manually (see below). 
 
 
 ```javascript 
@@ -156,7 +156,7 @@ var Square = redMongo.defineModel({
 
 Use same signature as `node-mongodb-native` driver. will call `redModel.bless(document)` on resulting document.
 
-Return only one result.
+Return only one result, the first if many.
 
 
 ```javascript 
@@ -172,9 +172,9 @@ Same as `node-mongodb-native`#find, but will call `redModel.bless(document)` on 
   Piece.findAll({type: 'square'}, function(err, pieces){});
 ```
 
-In this example, you will extract all the squares from the collection, resulting documents will be blessed as Square. 
+In this example, you will extract all squares documents from the collection, resulting documents will be blessed as Square. 
 
-`Square.findAll()` will give you all Pieces, not only Squares. You have to select type manually.
+`Square.findAll()` will give you all Pieces, not only Squares. You have to select `type` manually.
 
 
 ##### redModel.collection
@@ -182,5 +182,5 @@ In this example, you will extract all the squares from the collection, resulting
 Give you direct access to `node-mongodb-native` driver:
 
 ```javascript 
-  Piece.collection.insert([new Square(2), new Circle(2)], function(err, res){
+  Piece.collection.insert([new Square(2), new Circle(2)], function(err, res){})
 ```
