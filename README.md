@@ -163,7 +163,6 @@ Return only one result, the first if many.
   Piece.findOne({_id: ObjectId("52de8aa97a2731486fdcf8ee")}, function(err, piece){});
 ```
 
-
 ##### redModel.findAll( arguments )
 
 Same as `node-mongodb-native`#find, but will call `redModel.bless(document)` on each resulting document.
