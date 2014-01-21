@@ -3,14 +3,16 @@ var redMongo = require('..')
   , async = require('async');
 
 
+var Printable = {
+  toString: function(){
+    return this.type + ' => ' + this.surface;
+  }
+}
+
 var Piece  = redMongo.defineModel({
   collection: 'pieces',
 
-  instanceMethods: {
-    toString: function(){
-      return this.type + ' => ' + this.surface;
-    },
-  },
+  mixins: [Printable],
 
   staticMethods: {
    
@@ -75,7 +77,7 @@ function addPieces(cb){
 function computeTotalSurface(cb){
   Piece.findAll({}, function(err, pieces){
     if(err)return cb(err);
-    var surface = pieces.reduce(function(sum, piece){return sum + piece.surface}, 0);
+    var surface = pieces.reduce(function(sum, piece){ return sum + piece.surface}, 0);
     cb(null, surface);
   });
 }

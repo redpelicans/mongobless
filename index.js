@@ -153,15 +153,15 @@ var extend = module.exports.extend = function (destination, source) {
 
 
 /** 
-* utils.define(parent[, options = {}]) -> Model
+* utils.defineModel([, options = {}]) -> Model
 *
 * Use to define a new Model, see [[HREF.Model]].
 * 
-* - parent (Model): parent class of resulting model
 * - options (Object): new model definition
 *
 * ##### options
 *
+* * parent (Model): parent class of resulting model
 * * 'collection' (String): mongodb collection name
 * * 'mixins' (Array): mixins for new model
 * * 'staticMethods' (Object): new model static methods
