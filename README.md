@@ -1,6 +1,6 @@
-## red-mongo
+## mongo-redline
 
-red-mongo is a very lite an simple library to connect to Mongodb and map Document Object Models with plain Javascript ones.
+red-mongo is a very lite an simple Node.js library to connect to Mongodb and map Document Object Models with plain Javascript ones.
 It's purely schemaless, fully comptible with official Mongo API and made like a toolkit to fit your requirements rather than a full fonctionnal framework like Mongoose.
 You can use it just to connect to Mongo, not very useful, but efficient : use only one connection, callback made, so easily integrated with node.js and async.
 If you look for a thin layer to define models in a non intrusive manner, it will give you the beginning of the answer ...
@@ -11,7 +11,7 @@ If you look for a thin layer to define models in a non intrusive manner, it will
 #### Define a Model
 
 ```javascript 
-var redMongo = require('redMongo')
+var redMongo = require('mongo-redline')
   , Mixin1 = require('mixin1');
 
 var MyModel =  redMongo.defineModel({ 
@@ -39,7 +39,7 @@ var MyModel =  redMongo.defineModel({
 
 ```javascript 
 
-var redMongo = require('red-mongo')
+var redMongo = require('mongo-redline')
   , myModel = require('my_model');
 
 redMongo.connect({}, function(err){
@@ -76,7 +76,7 @@ Create a MongoDB connection, and callback it has result.
 
 #### Models
 
-Create a new red-mongo model. 
+Create a new redMongo model. 
 
 RedMongo models offer:
 
