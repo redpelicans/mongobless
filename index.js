@@ -14,12 +14,14 @@ module.exports.connect = function(opt, cb){
       redModels[i].connect(db);
     }
 
-    console.log("red-mongo is ready for your requests ...");
+    console.log("mongo-redline is ready for your requests ...");
 
     cb(null, db); 
   });
   return this;
 };
+
+module.exports.objectID = mongodb.ObjectID;
 
 module.exports.close = function(cb){ module.exports.db.close(cb); };
 
