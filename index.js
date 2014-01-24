@@ -21,7 +21,7 @@ module.exports.connect = function(opt, cb){
   return this;
 };
 
-module.exports.objectID = mongodb.ObjectID;
+module.exports.ObjectID = mongodb.ObjectID;
 
 module.exports.close = function(cb){ module.exports.db.close(cb); };
 
