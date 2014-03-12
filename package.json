@@ -1,6 +1,6 @@
 {
   "name": "mongo-redline",
-  "version": "0.0.6",
+  "version": "0.1.0",
   "description": "node.js thin mongodb document models library",
   "author": "Eric Basley <ebasley@gmail.com>",
   "keywords": [ "mongodb", "model", "document" ],
@@ -17,6 +17,19 @@
       "name": "Eric Basley",
       "email": "ebasley@gmail.com"
     }
-  ]
+  ],
+  "devDependencies": {
+      "mocha": "latest"
+    , "mocha-lcov-reporter": "latest"
+    , "should": "latest"
+    , "coveralls": "latest"
+    , "jscoverage": "latest"
+    , "jshint": "latest"
+  },
+  "scripts": {
+    "test": "make test",
+    "coveralls": "make test-coveralls"
+  },
+  "license": "MIT"
 }
 
