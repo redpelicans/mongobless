@@ -1,6 +1,6 @@
 {
   "name": "mongo-redline",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "node.js thin mongodb document models library",
   "author": "Eric Basley <ebasley@gmail.com>",
   "keywords": [ "mongodb", "model", "document" ],

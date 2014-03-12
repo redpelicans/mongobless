@@ -1,4 +1,5 @@
-## mongo-redline
+## mongo-redline [![Build Status](https://travis-ci.org/redpelicans/mongo-redline.png)](https://travis-ci.org/redpelicans/mongo-redline) [![Dependency Status](https://david-dm.org/redpelicans/mongo-redline.png)](https://david-dm.org/redpelicans/mongo-redline) [![Coverage Status](https://coveralls.io/repos/redpelicans/mongo-redline/badge.png?branch=master)](https://coveralls.io/r/redpelicans/mongo-redline?branch=master)
+
 
 mongo-redline is a very lite an simple Node.js library to connect to Mongodb and map documents with plain Javascript objects.
 It's purely schemaless, fully compatible with official Mongo API and made like a toolkit to fit your needs, rather than a full functional framework like Mongoose.
