@@ -193,7 +193,6 @@ module.exports.defineModel = function(options){
   }
 
   klass.prototype.__proto__ = superKlass.prototype;
-  klass.prototype.constructor = klass;
 
   return klass;
 }

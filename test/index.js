@@ -23,7 +23,8 @@ var Piece = mongoRedline.defineModel({
     },
     store: function(obj, cb){
       Piece.collection.insert(obj, function(err, pieces){
-        cb(err, pieces[0]);
+        if(err)return cb(err);
+        cb(null, pieces[0]);
       });
     },
     bless: function(obj){
