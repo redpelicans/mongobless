@@ -125,7 +125,7 @@ Model.findItems = Model.findAll;
 *
 **/
 
-Model.__defineGetter__('collection', function(){return this.db.collection(this.collectionName)});
+Model.__defineGetter__('collection', function(){return this.db && this.db.collection(this.collectionName)});
 
 
 /** 
@@ -193,6 +193,7 @@ module.exports.defineModel = function(options){
   }
 
   klass.prototype.__proto__ = superKlass.prototype;
+  klass.prototype.constructor = klass;
 
   return klass;
 }

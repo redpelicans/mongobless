@@ -5,76 +5,17 @@ var mongoRedline = require('../')
   , should = require('should')
   , assert = require('assert')
   , _ = require('underscore')
-  , database = 'tests';
-
-var Printable = {
-  toString: function(){
-    return this.type + '=>' + this.surface;
-  }
-};
-
-var Piece = mongoRedline.defineModel({
-  collection: 'test_pieces',
-  mixins: [Printable],
-  staticMethods: {
-    init: function(name){
-      this.name = name;
-      this.type = 'piece';
-    },
-    store: function(obj, cb){
-      Piece.collection.insert(obj, function(err, pieces){
-        if(err)return cb(err);
-        cb(null, pieces[0]);
-      });
-    },
-    bless: function(obj){
-      switch(obj.type){
-        case 'square':
-          return mongoRedline.Model.bless.bind(Square)(obj);
-        case 'circle':
-          return mongoRedline.Model.bless.bind(Circle)(obj);
-        default:
-          return mongoRedline.Model.bless.bind(Piece)(obj);
-      }
-    }
-  },
-});
-
-var Square = mongoRedline.defineModel({
-  extends: Piece,
-  instanceMethods: {
-    get surface(){
-      return this.size * this.size;
-    },
-  },
-  staticMethods:{
-    init: function(size){
-      this.size = size;
-      this.type = 'square';
-    }
-  }
-});
-
-var Circle = mongoRedline.defineModel({
-  extends: Piece,
-  instanceMethods: {
-    get surface(){
-      return Math.PI * Math.pow(this.radius, 2);
-    },
-  },
-  staticMethods:{
-    init: function(radius){
-      this.radius = radius;
-      this.type = 'circle';
-    }
-  }
-});
-
+  , util = require('util')
+  , database = 'tests'
+  , Piece = require('./model').Piece
+  , Square = require('./model').Square
+  , Circle = require('./model').Circle;
 
 describe('Polymorphism model', function(){
   before(function(done){
     mongoRedline.connect({host: 'localhost', database: database, verbose: false}, function(err, db){
       should.not.exist(err);
+      should.ok(Piece.db.collection);
       db.collection(Piece.collectionName).drop(function(){done()});
     });
   });
@@ -86,6 +27,12 @@ describe('Polymorphism model', function(){
     });
   });
 
+  // after(function(done){
+  //   mongoRedline.close(); 
+  //   done()
+  // });
+
+
   var pieces = {
     square: new Square(2),
     circle: new Circle(1)
@@ -93,13 +40,14 @@ describe('Polymorphism model', function(){
   var storedSquare;
 
   describe('Add a square and load it', function(){
-    it('should be a square', function(done){
-      Piece.store(pieces.square, function(err, piece){
+    it('should be a square instance Model', function(done){
+      should.ok(pieces.square.collection);
+      pieces.square.store(function(err, piece){
         should.not.exist(err);
         storedSquare = piece;
         Piece.findOne({type: 'square', size: 2}, function(err, piece){
           should.not.exist(err);
-          should.exist(piece.toString);
+          should.exist(piece.collection);
           should.exist(piece._id);
           piece.type.should.equal('square');
           piece.surface.should.equal(pieces.square.surface);
@@ -111,13 +59,12 @@ describe('Polymorphism model', function(){
   });
 
   describe('Add a circle', function(){
-    it('should be a circle', function(done){
-      Piece.store(pieces.circle, function(err, piece){
+    it('should be a circle data structure', function(done){
+      pieces.circle.store(function(err, piece){
         should.not.exist(err);
         should.exist(piece._id);
-        should.exist(piece.toString);
         piece.type.should.equal('circle');
-        piece.surface.should.equal(pieces.circle.surface);
+        should.not.exist(piece.surface);
         done();
       });
     });

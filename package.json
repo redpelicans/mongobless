@@ -1,30 +1,37 @@
 {
   "name": "mongo-redline",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "node.js thin mongodb document models library",
   "author": "Eric Basley <ebasley@gmail.com>",
-  "keywords": [ "mongodb", "model", "document" ],
+  "keywords": [
+    "mongodb",
+    "model",
+    "document"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/redpelicans/mongo-redline.git"
   },
   "dependencies": {
     "underscore": "1.6.x",
-    "mongodb": "1.3.x"
+    "mongodb": "1.4.x"
   },
-  "contributors":[
+  "contributors": [
     {
       "name": "Eric Basley",
       "email": "ebasley@gmail.com"
     }
   ],
   "devDependencies": {
-      "mocha": "latest"
-    , "mocha-lcov-reporter": "latest"
-    , "should": "latest"
-    , "coveralls": "latest"
-    , "jscoverage": "latest"
-    , "jshint": "latest"
+    "coveralls": "latest",
+    "gulp": "^3.8.8",
+    "gulp-mocha": "^1.0.0",
+    "gulp-util": "^3.0.1",
+    "jscoverage": "latest",
+    "jshint": "latest",
+    "mocha": "latest",
+    "mocha-lcov-reporter": "latest",
+    "should": "latest"
   },
   "scripts": {
     "test": "make test",
@@ -32,4 +39,3 @@
   },
   "license": "MIT"
 }
-

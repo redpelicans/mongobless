@@ -3,6 +3,7 @@
 
 mongo-redline is a very lite an simple Node.js library to connect to Mongodb and map documents with plain Javascript objects.
 It's purely schemaless, fully compatible with official Mongo API and made like a toolkit to fit your needs, rather than a full functional framework like Mongoose.
+It's only a read-only ODM, writes MUST be done manually.
 You can use it just to connect to Mongo, it may not very useful, but could be efficient : use only one connection, callback made, so easily integrated with node.js and async.
 If you look for a thin layer to define models in a non intrusive manner, it will give you the beginning of the answer ...
 

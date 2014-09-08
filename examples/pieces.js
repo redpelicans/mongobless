@@ -68,6 +68,12 @@ var Circle = redMongo.defineModel({
 });
 
 
+function removePieces(cb){
+  Piece.collection.remove(function(err, res){
+    cb(err);
+  });
+}
+
 function addPieces(cb){
   Piece.collection.insert([new Square(2), new Circle(2)], function(err, res){
     cb(err);
@@ -84,7 +90,7 @@ function computeTotalSurface(cb){
 
 redMongo.connect(params, function(err){
   if(err)console.error(err);
-  async.waterfall([addPieces, computeTotalSurface], function(err, surface){
+  async.waterfall([removePieces, addPieces, computeTotalSurface], function(err, surface){
     if(err)cb(err);
     else console.log(surface);
     redMongo.close();
