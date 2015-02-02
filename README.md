@@ -1,7 +1,7 @@
-## mongo-redline [![Build Status](https://travis-ci.org/redpelicans/mongo-redline.png)](https://travis-ci.org/redpelicans/mongo-redline) [![Dependency Status](https://david-dm.org/redpelicans/mongo-redline.png)](https://david-dm.org/redpelicans/mongo-redline) [![Coverage Status](https://coveralls.io/repos/redpelicans/mongo-redline/badge.png?branch=master)](https://coveralls.io/r/redpelicans/mongo-redline?branch=master)
+## mongobless [![Build Status](https://travis-ci.org/redpelicans/mongo.png)](https://travis-ci.org/redpelicans/mongobless) [![Dependency Status](https://david-dm.org/redpelicans/mongobless.png)](https://david-dm.org/redpelicans/mongobless) [![Coverage Status](https://coveralls.io/repos/redpelicans/mongobless/badge.png?branch=master)](https://coveralls.io/r/redpelicans/mongobless?branch=master)
 
 
-mongo-redline is a very lite an simple Node.js library to connect to Mongodb and map documents with plain Javascript objects.
+mongobless is a very lite an simple Node.js library to connect to Mongodb and map documents with plain Javascript objects.
 It's purely schemaless, fully compatible with official Mongo API and made like a toolkit to fit your needs, rather than a full functional framework like Mongoose.
 It's only a read-only ODM, writes MUST be done manually.
 You can use it just to connect to Mongo, it may not very useful, but could be efficient : use only one connection, callback made, so easily integrated with node.js and async.
@@ -13,7 +13,7 @@ If you look for a thin layer to define models in a non intrusive manner, it will
 #### Define a Model
 
 ```javascript 
-var redMongo = require('mongo-redline')
+var redMongo = require('mongobless')
   , Mixin1 = require('mixin1');
 
 var MyModel =  redMongo.defineModel({ 
@@ -41,7 +41,7 @@ var MyModel =  redMongo.defineModel({
 
 ```javascript 
 
-var redMongo = require('mongo-redline')
+var redMongo = require('mongobless')
   , myModel = require('my_model');
 
 redMongo.connect({}, function(err){
