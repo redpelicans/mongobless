@@ -1,8 +1,8 @@
 {
-  "name": "mongo-redline",
+  "name": "mongobless",
   "version": "0.2.3",
   "description": "node.js thin mongodb document models library",
-  "author": "Eric Basley <ebasley@gmail.com>",
+  "author": "Eric Basley <eric.basley@redpelicans.com>",
   "keywords": [
     "mongodb",
     "model",
@@ -10,7 +10,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/redpelicans/mongo-redline.git"
+    "url": "git://github.com/redpelicans/mongobless.git"
   },
   "dependencies": {
     "underscore": "1.6.x",
@@ -37,5 +37,5 @@
     "test": "make test",
     "coveralls": "make test-coveralls"
   },
-  "license": "MIT"
+  "license": "Apache"
 }
