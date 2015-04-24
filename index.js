@@ -4,8 +4,18 @@ var mongodb = require('mongodb')
 
 module.exports.connect = function(opt, cb){
   var options = _.extend({host: '127.0.0.1', port: 27017, auto_reconnect: true, poolSize: 10, w:1, strict: true, native_parser: true, verbose: true}, opt)
-    ,  mongoserver = new mongodb.Server(options.host, options.port, options)
-    ,  dbconnector = module.exports.db = new mongodb.Db(options.database, mongoserver, options);
+    , mongoserver;
+
+  if (!options.replicaSet)
+    mongoserver = new mongodb.Server(options.host, options.port, options);
+  else {
+    var replicaServers = _.map(options.replicaSet.servers, function(server){
+      return new mongodb.Server( server.host, server.port, server.options);
+    });
+    mongoserver = new mongodb.ReplSet(replicaServers, _.extend({}, options.replicaSet.options, {rs_name: options.replicaSet.name}));
+  }
+
+  var dbconnector = module.exports.db = new mongodb.Db(options.database, mongoserver, options);
 
   dbconnector.open(function(err, db){
     if (err) return cb(err);
