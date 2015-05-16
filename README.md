@@ -7,30 +7,23 @@ It's only a read-only ODM, writes MUST be done manually.
 You can use it just to connect to Mongo, it may not very useful, but could be efficient : use only one connection, callback made, so easily integrated with node.js and async.
 If you look for a thin layer to define models in a non intrusive manner, it will give you the beginning of the answer ...
 
+Last but not the least, Mongobless use es6 and es7 syntax, so you need babel to use it ...
 
 ### Usage
 
 #### Define a Model
 
 ```javascript 
-var redMongo = require('mongobless')
-  , Mixin1 = require('mixin1');
+import mongobless from 'mongobless'
 
-var MyModel =  redMongo.defineModel({ 
-
-  collection: 'my_models',
-
-  mixins: [Mixin1],
-
-  instanceMethods: {
-    get age(){
-      return (new Date()).getFullYear() -  this.birthdayYear;
-    }
-  },
-
-  staticMethods: {
-    function doIt(newModel){}
+@mogobless({collection: 'models'})
+export default class MyModel { 
+  // es6 class construction
+  get age(){
+    return (new Date()).getFullYear() -  this.birthdayYear;
   }
+  
+  static doIt(newModel){}
 
 });
 
@@ -38,30 +31,78 @@ var MyModel =  redMongo.defineModel({
 
 #### Connect, Query and Manipule Objects
 
-
 ```javascript 
+import mongobless from 'mongobless'
+import Mymodel from 'my_model';
 
-var redMongo = require('mongobless')
-  , myModel = require('my_model');
-
-redMongo.connect({}, function(err){
+mongobless.connect({}, err => {
   if( err) return console.error( "...");
-  // Query my_models collection
-  my_model.findOne({name: 'toto'}, function(err, model){
+  // Query models collection
+  my_model.findOne({name: 'toto'}, (err, model) => {
     if(err)console.error(err);
     else console.log(model.age)
-    redMongo.close();
+    mongobless.close();
   });
 }
 ```
 
+#### Inheritance
 
+"Programming is subcontracting" said B. Meyer beginning of 90's, let's build subtypes, now ... 
+We have to define Piece, Square and Circle types.
+
+
+```
+import  mongobless from  'mongobless';
+
+@mongobless({collection: 'pieces'})
+export class Piece{
+  static bless(obj){
+    switch(obj.type){
+      case 'square':
+        return mongobless.bless.bind(Square)(obj);
+      case 'circle':
+        return mongobless.bless.bind(Circle)(obj);
+      default:
+        return mongobless.bless.bind(Piece)(obj);
+    }
+  }
+}
+
+@mongobless()
+export class Square{
+  get surface(){
+    return this.size * this.size;
+  }
+    
+  constructor(size){
+    this.size = size;
+    this.type = 'square';
+  }
+}
+
+@mongobless()
+export class Circle{
+  get surface(){
+    //return Math.PI * Math.pow(this.radius, 2);
+    return 3 * Math.pow(this.radius, 2);
+  }
+
+  constructor(radius){
+    this.radius = radius;
+    this.type = 'circle';
+  }
+}
+
+```
+
+mongobless is not very smart, just lite, so to define inheritance, you mainly have to do it manually, but good news, it's very simple and you can do what you want! First, at insert time, always add a type (or whetever name you want) attribute to your documents. In this example domain value must be ['circle', 'square']. Second, at loading time, if you use findOne or findAll, mongobless will call Piece.bless(document) for each document, and depending on document type value, will be blessed to the right type (here Square or Circle). It's clearly an antipattern, for a class to know it's subclasses, but in this context it's so simple, and useful that we will use it !
 
 ### API
 
 #### Connection
 
-##### redMongo.connect(options, cb)
+##### mongobless.connect(options, cb)
 
 Create a MongoDB connection, and callback it has result.
 
@@ -74,87 +115,7 @@ Create a MongoDB connection, and callback it has result.
   * ` w` default to 1
   * `strict` default to true
   * `native_parser` defaut to true
-
-
-#### Models
-
-Create a new redMongo model. 
-
-RedMongo models offer:
-
-* type definitions via redMongo models
-* a binding between collections and redMongo models
-* a binding at reading time between mongo's documents and javascript objets
-* facilities to query (findOne, findAll) documents based redMongo models and a bridge to mongodb API
-
-##### redMongo.defineModel(options)
-
-Returns a redModel.
-
-* options *Object*:
-
-  * `collection`: collection's name. May be optionnal for polymorphisme.
-  * `extends`: redMongo super model, default as redMongo.Model (see ex pieces.js)
-  * `mixins`: list of javascript objects to be used as mixins for the new model
-  * `instanceMethods`: javascript object used to define documents methods
-  * `staticMethods`: javascript object used to define `redModel` methods. Adding an entry within this object is similare to set a function attribute on the resulting redModel. 'init' key is reserved to define constructor (see below)
-
-`RedModel.bless`, defined within `staticMethods` or in an other manner, is used to 'type' mongo's document. At reading time each document is blessed depending on its collection. For polymorphism you have to do it manually (see below). 
-
-
-```javascript 
-
-var Printable = {
-  toString: function(){
-    return this.type + ' => ' + this.surface;
-  },
-}
-
-var Piece  = redMongo.defineModel({
-  collection: 'pieces',
-
-  mixins: [Printable],
-
-  staticMethods: {
-   
-    init: function(name){
-      this.name = name;
-      this.type = 'piece';
-    },
-
-    bless: function (obj){
-      switch( obj.type ){
-        case 'square':
-          return redMongo.Model.bless.bind(Square)(obj);
-        case 'circle':
-          return redMongo.Model.bless.bind(Circle)(obj);
-      default:
-       return redMongo.Model.bless.bind(Piece)(obj);
-      }
-    }
-  }
-});
-
-var Square = redMongo.defineModel({
-  extends: Piece,
-
-  instanceMethods: {
-    get surface(){
-      return this.size * this.size;
-    }
-  },
-  staticMethods: {
-    init: function(size){
-      this.size = size;
-      this.type = 'square';
-    }
-  }
-});
-
-
-```
-
-##### redModel.findOne( arguments )
+##### mongobless.findOne( arguments )
 
 Use same signature as `node-mongodb-native` driver. will call `redModel.bless(document)` on resulting document.
 
@@ -162,7 +123,7 @@ Return only one result, the first if many.
 
 
 ```javascript 
-  Piece.findOne({_id: ObjectId("52de8aa97a2731486fdcf8ee")}, function(err, piece){});
+  Piece.findOne({_id: ObjectId("52de8aa97a2731486fdcf8ee")}, (err, piece) => {});
 ```
 
 ##### redModel.findAll( arguments )
@@ -170,7 +131,7 @@ Return only one result, the first if many.
 Same as `node-mongodb-native`#find, but will call `redModel.bless(document)` on each resulting document.
 
 ```javascript 
-  Piece.findAll({type: 'square'}, function(err, pieces){});
+  Piece.findAll({type: 'square'}, (err, pieces) => {});
 ```
 
 In this example, you will extract all squares documents from the collection, resulting documents will be blessed as Square. 
@@ -178,7 +139,7 @@ In this example, you will extract all squares documents from the collection, res
 `Square.findAll()` will give you all Pieces, not only Squares. You have to select `type` manually.
 
 
-##### redModel.collection
+##### mongobless.collection
 
 Give you direct access to `node-mongodb-native` driver:
 
