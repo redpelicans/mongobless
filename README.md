@@ -29,29 +29,7 @@ export default class MyModel {
 
 ```
 
-#### Connect, Query and Manipule Objects
 
-```javascript 
-import mongobless from 'mongobless'
-import Mymodel from 'my_model';
-
-mongobless.connect({}, err => {
-  if( err) return console.error( "...");
-  // Query models collection
-  my_model.findOne({name: 'toto'}, (err, model) => {
-    if(err)console.error(err);
-    else console.log(model.age)
-    mongobless.close();
-  });
-}
-```
-#### Run your Code
-
-Because of the use of es6, es7 syntaxe you need a transpiler to use it:
-
-```
-  $ babel-node --stage 0 piece.js
-```
 
 #### Inheritance
 
@@ -105,6 +83,31 @@ export class Circle{
 
 mongobless is not very smart, just lite, so to define inheritance, you mainly have to do it manually, but good news, it's very simple and you can do what you want! First, at insert time, always add a type (or whetever name you want) attribute to your documents. In this example domain value must be ['circle', 'square']. Second, at loading time, if you use findOne or findAll, mongobless will call Piece.bless(document) for each document, and depending on document type value, will be blessed to the right type (here Square or Circle). It's clearly an antipattern, for a class to know it's subclasses, but in this context it's so simple, and useful that we will use it !
 
+
+#### Connect, Query and Manipule Objects
+
+```javascript 
+import mongobless from 'mongobless'
+import Mymodel from 'my_model';
+
+mongobless.connect({}, err => {
+  if( err) return console.error( "...");
+  // Query models collection
+  my_model.findOne({name: 'toto'}, (err, model) => {
+    if(err)console.error(err);
+    else console.log(model.age)
+    mongobless.close();
+  });
+}
+```
+#### Run your Code
+
+Because of the use of es6, es7 syntaxe you need a transpiler to use it:
+
+```
+  $ babel-node --stage 0 piece.js
+```
+
 ### API
 
 #### Connection
@@ -122,6 +125,8 @@ Create a MongoDB connection, and callback it has result.
   * ` w` default to 1
   * `strict` default to true
   * `native_parser` defaut to true
+  
+  
 ##### mongobless.findOne( arguments )
 
 Use same signature as `node-mongodb-native` driver. will call `redModel.bless(document)` on resulting document.
@@ -153,3 +158,5 @@ Give you direct access to `node-mongodb-native` driver:
 ```javascript 
   Piece.collection.insert([new Square(2), new Circle(2)], function(err, res){})
 ```
+
+That's all folks ....
