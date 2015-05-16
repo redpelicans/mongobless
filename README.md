@@ -18,7 +18,7 @@ import mongobless from 'mongobless'
 
 @mogobless({collection: 'models'})
 export default class MyModel { 
-  // es6 class construction
+  // plain es6 class 
   get age(){
     return (new Date()).getFullYear() -  this.birthdayYear;
   }
