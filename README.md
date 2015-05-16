@@ -1,4 +1,4 @@
-## mongobless [![Build Status](https://travis-ci.org/redpelicans/mongo.png)](https://travis-ci.org/redpelicans/mongobless) [![Dependency Status](https://david-dm.org/redpelicans/mongobless.png)](https://david-dm.org/redpelicans/mongobless) [![Coverage Status](https://coveralls.io/repos/redpelicans/mongobless/badge.png?branch=master)](https://coveralls.io/r/redpelicans/mongobless?branch=master)
+## mongobless [![Build Status](https://travis-ci.org/redpelicans/mongo.png)](https://travis-ci.org/redpelicans/mongobless)
 
 
 mongobless is a very lite an simple Node.js library to connect to Mongodb and map documents with plain Javascript objects.
