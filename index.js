@@ -1,8 +1,89 @@
-var mongodb = require('mongodb')
-  , _ = require("underscore")
-  , redModels = [];
+import mongodb from 'mongodb';
+import _ from 'lodash';
 
-module.exports.connect = function(opt, cb){
+let debug = require('debug')('mongobless:init');
+
+let models = [];
+let DB;
+let Model = new Function();
+
+function extend(destination) {
+  var sources = Array.prototype.slice.call(arguments, 1);
+  for(let i in sources){
+    var source = sources[i];
+    Object.keys(source).forEach(function(property) {
+      Object.defineProperty(destination, property, Object.getOwnPropertyDescriptor(source, property));
+    });
+  }
+  return destination;
+}
+
+Model.bless = function(obj){
+  obj.__proto__ = this.prototype;
+  obj.constructor = this;
+  return obj;
+};
+
+Model.findAll = function(){
+  let args = Array.prototype.slice.call(arguments)
+    , fn = args.pop()
+    , self = this
+    , cb = (err, res) => {
+      if(err) return fn(err);
+      fn(null, res.map(obj => self.bless(obj)));
+    };
+    this.collection.find.apply(this.collection, args).toArray(cb);
+    return this;
+};
+
+Model.findOne = function(query, cb){
+  let callback = (err, res) => {
+    if(err) return cb(err);
+    if(!res) return cb(null, null);
+    cb(null, this.bless(res));
+  }.bind(this);
+  this.collection.findOne(query, callback);
+  return this;
+}
+
+Object.defineProperty(Model, 'collection', {
+    enumerable: true
+  , configurable: false
+  , get: function(){return this.db.collection(this.collectionName) }
+});
+
+Model.connect = function(db){ 
+  this.db = db;
+}
+
+Model.extendableProperties = ['connect', 'collection', 'findOne', 'findAll'];
+
+export default function MongoBless(options = {}){
+  return function(constructor){
+    if(options.collection){
+      if(constructor.isPersistentRoot)throw new Error(`Cannot overload collection's name for class '${constructor.name}'`);
+      models.push(constructor);
+      constructor.collectionName = options.collection;
+      constructor.isPersistentRoot = true;
+      _.each(Model.extendableProperties, prop => {
+        Object.defineProperty(constructor, prop, Object.getOwnPropertyDescriptor(Model, prop));
+      });
+      if(!constructor.bless){
+        Object.defineProperty(constructor, 'bless', Object.getOwnPropertyDescriptor(Model, 'bless'));
+      }
+    }else{
+      constructor.isPersistentRoot = false;
+    }
+  }
+}
+
+MongoBless.close = cb => DB.close(cb); 
+
+MongoBless.bless = function(obj){ 
+  return Model.bless.bind(this)(obj);
+};
+
+MongoBless.connect = function(opt, cb){
   var options = _.extend({host: '127.0.0.1', port: 27017, auto_reconnect: true, poolSize: 10, w:1, strict: true, native_parser: true, verbose: true}, opt)
     , mongoserver;
 
@@ -15,196 +96,16 @@ module.exports.connect = function(opt, cb){
     mongoserver = new mongodb.ReplSet(replicaServers, _.extend({}, options.replicaSet.options, {rs_name: options.replicaSet.name}));
   }
 
-  var dbconnector = module.exports.db = new mongodb.Db(options.database, mongoserver, options);
+  var dbconnector =  new mongodb.Db(options.database, mongoserver, options);
 
   dbconnector.open(function(err, db){
+    DB = db;
     if (err) return cb(err);
-
-    for(var i in redModels){
-      redModels[i].connect(db);
-    }
-
-    if(options.verbose) console.log("mongo-redline is ready for your requests ...");
-
+    for(let i in models){ models[i].connect(db) }
+    debug("mongobless is ready for your requests ...");
     cb(null, db); 
   });
-  return this;
-};
-
-module.exports.ObjectID = mongodb.ObjectID;
-
-module.exports.close = function(cb){ module.exports.db.close(cb); };
-
-
-var Model = module.exports.Model = new Function;
-
-/** 
-* Model.collection -> mongodb.collection
-*
-* MongoDB collection getter
-*
-**/
-Model.prototype = {
-  get collection(){
-  // Obsolete
-    return this.constructor.collection;
-  }
-};
-
-/**
-* Model.bless([[Object]]) -> Object
-*
-* Use to dynamically type an object as Model by setting object's __proto__ with
-* Model.prototype:
-*
-*     function(obj){
-*         obj.__proto__ = this.prototype;
-*         return obj;
-*     }
-*
-* Very dangerous: use it carefully !!
-*
-**/
-Model.bless = function(obj){
-  obj.__proto__ = this.prototype;
-  return obj;
 };
 
 
-Model.hasOwnCollection = function(){
-  // false si n'hérite pas directement de Model
-  return this.hasOwnProperty('collectionName');
-};
-
-Model.connect = function(db){
-  if(this.hasOwnCollection()) this.db = db;
-};
-
-/**
-* Model.findOne(query, callback) -> [[Model]]
-*
-* wrapper around this.collection.findOne but result object will be blessed (see
-* [[Model.bless]]).
-**/
-Model.findOne = function(query, callback){
-  var cb = function (err, res) {
-    if(err) return callback(err);
-    if(!res) return callback(null, null);
-    callback(null, this.bless(res));
-  }.bind(this);
-  this.collection.findOne(query, cb);
-  return this;
-}
-
-/**
-* Model.findAll(query, options, callback) -> [[Array]]
-*
-* wrapper around this.collection.find but result objects will be blessed (see
-* [[Model.bless]]).
-*
-* ##### exemple:
-*
-*        models.products.finditems(
-*             {hId: 1, :date: {$lte: new Date()}}, 
-*             {sort: {date: 1}},
-*             function(err, results){ ... }
-*        );
-*
-* ##### options: see http://mongodb.github.com/node-mongodb-native/
-*
-**/
-
-Model.findAll = function(query, options, callback){
-  var args = Array.prototype.slice.call(arguments)
-    , fn = args.pop()
-    , self = this
-    , cb = function (err, res) {
-    if(err) return fn(err);
-    fn(null, _.map(res, function(obj){return self.bless(obj);}));
-  };
-  this.collection.find.apply(this.collection, args).toArray(cb);
-  return this;
-}
-
-Model.findItems = Model.findAll;
-
-/** 
-* Model#collection -> mongodb.collection
-*
-* MongoDB collection getter
-*
-**/
-
-Model.__defineGetter__('collection', function(){return this.db && this.db.collection(this.collectionName)});
-
-
-/** 
-* utils.extend(destination, source) -> destination
-*
-* Mixin source properties into destination object, including getters and setters
-*
-*  - destination (Object): object to be extended
-*  - source (Object): properties supplier
-*
-*        var foo = {msg: 'coucou'};
-*        utils.extend(foo, {boo: function(){return this.msg}})
-*        foo.boo();
-*
-**/
-
-var extend = module.exports.extend = function (destination, source) {
-  var sources = Array.prototype.slice.call(arguments, 1);
-  for(var i in sources){
-    var source = sources[i];
-    Object.keys(source).forEach(function(property) {
-      Object.defineProperty(destination, property, Object.getOwnPropertyDescriptor(source, property));
-    });
-  }
-  return destination;
-}
-
-
-/** 
-* utils.defineModel([, options = {}]) -> Model
-*
-* Use to define a new Model, see [[HREF.Model]].
-* 
-* - options (Object): new model definition
-*
-* ##### options
-*
-* * parent (Model): parent class of resulting model
-* * 'collection' (String): mongodb collection name
-* * 'mixins' (Array): mixins for new model
-* * 'staticMethods' (Object): new model static methods
-* * 'instanceMethods' (Object): new model instance methods
-*
-**/
-module.exports.defineModel = function(options){
-  superKlass = options['extends'] || Model ;
-  options = options || {};
-
-  var klass = options.staticMethods && options.staticMethods.init || new Function;
-  if(options.staticMethods) extend(klass, options.staticMethods);
-  klass.__proto__ = superKlass;
-  klass.prototype = options.instanceMethods || {};
-
-  if(options.collection){
-    klass.collectionName = options.collection;
-    redModels.push(klass);
-  }
-
-  if(options.mixins){
-    var p = {};
-    options.mixins.forEach(function(mixin){
-      extend(p, mixin);
-    });
-    klass.prototype = extend(p, klass.prototype);
-  }
-
-  klass.prototype.__proto__ = superKlass.prototype;
-  klass.prototype.constructor = klass;
-
-  return klass;
-}
-
+export let ObjectId = mongodb.ObjectID;
