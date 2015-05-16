@@ -50,7 +50,7 @@ mongobless.connect({}, err => {
 Because of the use of es6, es7 syntaxe you need a transpiler to use it:
 
 ```
-  $ babael-node --stage 0 piece.js
+  $ babel-node --stage 0 piece.js
 ```
 
 #### Inheritance
