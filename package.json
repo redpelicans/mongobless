@@ -1,6 +1,6 @@
 {
   "name": "mongobless",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "es6 node.js thin mongodb document models ODM",
   "author": "Eric Basley <eric.basley@redpelicans.com>",
   "keywords": [
