@@ -55,7 +55,7 @@ export class Piece{
 }
 
 @mongobless()
-export class Square{
+export class Square extends Piece{
   get surface(){
     return this.size * this.size;
   }
@@ -67,7 +67,7 @@ export class Square{
 }
 
 @mongobless()
-export class Circle{
+export class Circle extends Piece{
   get surface(){
     //return Math.PI * Math.pow(this.radius, 2);
     return 3 * Math.pow(this.radius, 2);
