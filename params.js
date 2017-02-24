@@ -1,6 +1,6 @@
 module.exports = {
   db: {
-    host: 'mongo2',
+    host: '0.0.0.0',
     port: 27017,
     options:{
       auto_reconnect: true,

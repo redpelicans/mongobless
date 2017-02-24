@@ -1,16 +1,17 @@
 import mongodb from 'mongodb';
 import _ from 'lodash';
 
-let debug = require('debug')('mongobless:init');
+const debug = require('debug')('mongobless');
 
-let models = [];
+const models = [];
 let DB;
-let Model = new Function();
+const Model = new Function();
+const isFunction = obj => typeof obj === 'function';
 
 function extend(destination) {
-  var sources = Array.prototype.slice.call(arguments, 1);
+  const sources = Array.prototype.slice.call(arguments, 1);
   for(let i in sources){
-    var source = sources[i];
+    const source = sources[i];
     Object.keys(source).forEach(function(property) {
       Object.defineProperty(destination, property, Object.getOwnPropertyDescriptor(source, property));
     });
@@ -19,31 +20,38 @@ function extend(destination) {
 }
 
 Model.bless = function(obj){
+  if (!obj) return;
   obj.__proto__ = this.prototype;
   obj.constructor = this;
   return obj;
 };
 
-Model.findAll = function(){
-  let args = Array.prototype.slice.call(arguments)
-    , fn = args.pop()
-    , self = this
-    , cb = (err, res) => {
+Model.findAll = function(...params){
+  const blessAll = data => data.map(obj => this.bless(obj));
+  const fn = params[params.length - 1];
+
+  if (isFunction(fn)) {
+    const cb = (err, res) => {
       if(err) return fn(err);
-      fn(null, res.map(obj => self.bless(obj)));
+      fn(null, blessAll(res));
     };
-    this.collection.find.apply(this.collection, args).toArray(cb);
+    this.collection.find(...params.slice(0, -1)).toArray(cb);
     return this;
+  }
+  return this.collection.find(...[...params, fn]).toArray().then(blessAll);
 };
 
 Model.findOne = function(query, cb){
-  let callback = (err, res) => {
+  const blessOne = obj => this.bless(obj);
+  const callback = (err, res) => {
     if(err) return cb(err);
-    if(!res) return cb(null, null);
-    cb(null, this.bless(res));
-  }.bind(this);
-  this.collection.findOne(query, callback);
-  return this;
+    cb(null, blessOne(res));
+  };
+  if (cb) {
+    this.collection.findOne(query, callback);
+    return this;
+  }
+  return this.collection.findOne(query).then(blessOne);
 }
 
 Object.defineProperty(Model, 'collection', {
@@ -77,35 +85,47 @@ export default function MongoBless(options = {}){
   }
 }
 
-MongoBless.close = cb => DB.close(cb); 
+MongoBless.close = cb => { 
+  if (cb) return DB.close(cb); 
+  return DB.close();
+}
 
 MongoBless.bless = function(obj){ 
   return Model.bless.bind(this)(obj);
 };
 
 MongoBless.connect = function(opt, cb){
-  var options = _.extend({host: '127.0.0.1', port: 27017, auto_reconnect: true, poolSize: 10, w:1, strict: true, native_parser: true, verbose: true}, opt)
-    , mongoserver;
+  const options = _.extend({host: '127.0.0.1', port: 27017, auto_reconnect: true, poolSize: 10, w:1, strict: true, native_parser: true, verbose: true}, opt);
+  let mongoserver;
 
   if (!options.replicaSet)
     mongoserver = new mongodb.Server(options.host, options.port, options);
   else {
-    var replicaServers = _.map(options.replicaSet.servers, function(server){
+    const replicaServers = _.map(options.replicaSet.servers, function(server){
       return new mongodb.Server( server.host, server.port, server.options);
     });
     mongoserver = new mongodb.ReplSet(replicaServers, _.extend({}, options.replicaSet.options, {rs_name: options.replicaSet.name}));
   }
 
-  var dbconnector =  new mongodb.Db(options.database, mongoserver, options);
-
-  dbconnector.open(function(err, db){
+  const dbconnector =  new mongodb.Db(options.database, mongoserver, options);
+  const initModels = (db) => {
     DB = db;
-    if (err) return cb(err);
-    for(let i in models){ models[i].connect(db) }
+    for(const i in models){ models[i].connect(db) }
     debug("mongobless is ready for your requests ...");
-    cb(null, db); 
-  });
+    return db;
+  };
+
+  if (cb) {
+    dbconnector.open((err, db) => { 
+      if (err) return cb(err);
+      initModels(db); 
+      cb(null, db);
+    });
+  } else {
+    return dbconnector.open().then(initModels);
+  }
+
 };
 
 
-export let ObjectId = mongodb.ObjectID;
+export const ObjectId = mongodb.ObjectID;

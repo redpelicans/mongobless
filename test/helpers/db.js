@@ -1,4 +1,3 @@
-import  _  from 'lodash';
 import  async  from 'async';
 import mongobless from '../../index';
 
@@ -8,7 +7,6 @@ export function connect(cb){
   let opt = process.env['NODE_ENV'] === 'travis' ? {host: 'localhost', port: 27017, database: 'tests'} : require('../../params').db;
   mongobless.connect(opt, function(err, db) {
     if(err) return cb(err);
-    //console.log('Mintello models are ready to help you ...');
     DB = db;
     cb(err, mongobless);
   });

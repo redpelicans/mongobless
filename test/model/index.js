@@ -1,4 +1,4 @@
-import  mongobless from  '../..';
+import  mongobless from  '../../src';
 
 @mongobless({collection: 'pieces'})
 export class Piece{
