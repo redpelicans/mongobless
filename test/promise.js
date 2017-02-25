@@ -1,5 +1,5 @@
 import should from 'should';
-import mongobless from '../src';
+import mongobless from '..';
 import { Piece, Square, Circle } from './model';
 
 const data = {
@@ -22,7 +22,7 @@ const data = {
 let DB;
 
 const connect = () => {
-  let opt = process.env['NODE_ENV'] === 'travis' ? {host: 'localhost', port: 27017, database: 'tests'} : require('../params').db;
+  const opt = process.env['NODE_ENV'] === 'travis' ? {host: 'localhost', port: 27017, database: 'tests'} : require('../params').db;
   return mongobless.connect(opt).then(db => DB = db);
 };
 
@@ -39,17 +39,59 @@ describe('Polymorphism model with promises', () => {
   beforeEach(() => drop().then(() => load(data)));
   after(close);
 
-  describe('Compute total surface', () => {
-    it('should have a good surface', (done) => {
-      Piece
-        .findAll()
-        .then( pieces => {
-          let totalDbSurface = pieces.reduce((res, piece) => res + piece.surface, 0);
-          should(7).equal(totalDbSurface);
-          done();
+  it('should compute the right surface', (done) => {
+    Piece
+      .findAll()
+      .then( pieces => {
+        const totalDbSurface = pieces.reduce((res, piece) => res + piece.surface, 0);
+        should(7).equal(totalDbSurface);
+        done();
+    })
+    .catch(done);
+  });
+
+});
+
+describe('MongoDB API with promises', () => {
+  before(() => connect().then(drop));
+  after(close);
+
+  it('should load data', () => load(data));
+  it('should get data', (done) => {
+    Piece.findAll()
+      .then(pieces => {
+        should(pieces.map(p => p._id)).eql(data.collections.pieces.map(p => p._id));
+        done();
       })
       .catch(done);
-    });
+  });
+
+  it('should filter data', (done) => {
+    Piece.findAll({ type: 'square' })
+      .then(pieces => {
+        const totalDbSurface = pieces.reduce((res, piece) => res + piece.surface, 0);
+        should(4).equal(totalDbSurface);
+        done();
+      })
+      .catch(done);
+  });
+
+  it('should filter and project data', (done) => {
+    Piece.findAll({ type: 'square' }, { size: 1 })
+      .then(pieces => {
+        should(pieces[0].size).equal(2);
+        done();
+      })
+      .catch(done);
+  });
+
+  it('should find one', (done) => {
+    Piece.findOne({ type: 'square' }, { size: 1 })
+      .then(piece => {
+        should(piece.size).equal(2);
+        done();
+      })
+      .catch(done);
   });
 
 });

@@ -76,24 +76,34 @@ Model.findAll = function () {
     (_collection = this.collection).find.apply(_collection, _toConsumableArray(params.slice(0, -1))).toArray(cb);
     return this;
   }
-  return (_collection2 = this.collection).find.apply(_collection2, [].concat(params, [fn])).toArray().then(blessAll);
+  return (_collection2 = this.collection).find.apply(_collection2, params).toArray().then(blessAll);
 };
 
-Model.findOne = function (query, cb) {
-  var _this2 = this;
+Model.findOne = function () {
+  var _this2 = this,
+      _collection4;
 
   var blessOne = function blessOne(obj) {
     return _this2.bless(obj);
   };
-  var callback = function callback(err, res) {
-    if (err) return cb(err);
-    cb(null, blessOne(res));
-  };
-  if (cb) {
-    this.collection.findOne(query, callback);
+
+  for (var _len2 = arguments.length, params = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+    params[_key2] = arguments[_key2];
+  }
+
+  var fn = params[params.length - 1];
+
+  if (isFunction(fn)) {
+    var _collection3;
+
+    var cb = function cb(err, res) {
+      if (err) return fn(err);
+      fn(null, blessOne(res));
+    };
+    (_collection3 = this.collection).findOne.apply(_collection3, _toConsumableArray(params.slice(0, -1)).concat([cb]));
     return this;
   }
-  return this.collection.findOne(query).then(blessOne);
+  return (_collection4 = this.collection).findOne.apply(_collection4, params).then(blessOne);
 };
 
 Object.defineProperty(Model, 'collection', {

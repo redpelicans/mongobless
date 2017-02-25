@@ -38,20 +38,22 @@ Model.findAll = function(...params){
     this.collection.find(...params.slice(0, -1)).toArray(cb);
     return this;
   }
-  return this.collection.find(...[...params, fn]).toArray().then(blessAll);
+  return this.collection.find(...params).toArray().then(blessAll);
 };
 
-Model.findOne = function(query, cb){
+Model.findOne = function(...params){
   const blessOne = obj => this.bless(obj);
-  const callback = (err, res) => {
-    if(err) return cb(err);
-    cb(null, blessOne(res));
-  };
-  if (cb) {
-    this.collection.findOne(query, callback);
+  const fn = params[params.length - 1];
+
+  if (isFunction(fn)) {
+    const cb = (err, res) => {
+      if(err) return fn(err);
+      fn(null, blessOne(res));
+    };
+    this.collection.findOne(...params.slice(0, -1), cb);
     return this;
   }
-  return this.collection.findOne(query).then(blessOne);
+  return this.collection.findOne(...params).then(blessOne);
 }
 
 Object.defineProperty(Model, 'collection', {
