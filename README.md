@@ -4,7 +4,7 @@
 mongobless is a very lite an simple Node.js library to connect to Mongodb and map documents with plain Javascript objects.
 It's purely schemaless, fully compatible with official Mongo API and made like a toolkit to fit your needs, rather than a full functional framework like Mongoose.
 It's only a read-only ODM, writes MUST be done manually.
-You can use it just to connect to Mongo, it may not very useful, but could be efficient : use only one connection, callback made, so easily integrated with node.js and async.
+You can use it just to connect to Mongo, it may not very useful, but could be efficient : use only one connection, callback or promise API, so easily integrated with node.js.
 If you look for a thin layer to define models in a non intrusive manner, it will give you the beginning of the answer ...
 
 Last but not the least, Mongobless use es6 and es7 syntax, so you need babel to use it ...
@@ -69,8 +69,7 @@ export class Square extends Piece{
 @mongobless()
 export class Circle extends Piece{
   get surface(){
-    //return Math.PI * Math.pow(this.radius, 2);
-    return 3 * Math.pow(this.radius, 2);
+    return Math.PI * Math.pow(this.radius, 2);
   }
 
   constructor(radius){
@@ -93,8 +92,8 @@ import Mymodel from 'my_model';
 mongobless.connect({}, err => {
   if( err) return console.error( "...");
   // Query models collection
-  my_model.findOne({name: 'toto'}, (err, model) => {
-    if(err)console.error(err);
+  my_model.findOne({ name: 'toto' }, (err, model) => {
+    if (err) console.error(err);
     else console.log(model.age)
     mongobless.close();
   });
@@ -105,14 +104,17 @@ mongobless.connect({}, err => {
 Because of the use of es6, es7 syntaxe you need a transpiler to use it:
 
 ```
-  $ babel-node --stage 0 piece.js
+  $ babel-node piece.js
 ```
 
 ### API
 
+All API are promisify since version 2.1.0, if you omit callback, a promise will be returned.
+
+
 #### Connection
 
-##### mongobless.connect(options, cb)
+##### mongobless.connect(options<F5>, cb) | Promise
 
 Create a MongoDB connection, and callback it has result.
 
@@ -127,7 +129,7 @@ Create a MongoDB connection, and callback it has result.
   * `native_parser` defaut to true
   
   
-##### mongobless.findOne( arguments )
+##### mongobless.findOne( arguments ) | Promise
 
 Use same signature as `node-mongodb-native` driver. will call `redModel.bless(document)` on resulting document.
 
@@ -138,7 +140,7 @@ Return only one result, the first if many.
   Piece.findOne({_id: ObjectId("52de8aa97a2731486fdcf8ee")}, (err, piece) => {});
 ```
 
-##### redModel.findAll( arguments )
+##### redModel.findAll( arguments ) | Promise
 
 Same as `node-mongodb-native`#find, but will call `redModel.bless(document)` on each resulting document.
 
